@@ -42,11 +42,6 @@ func Test_Swagger(t *testing.T) {
 			url:        "/swagger/notfound",
 			statusCode: 404,
 		},
-		{
-			name:       "Should return status 301",
-			url:        "/swagger",
-			statusCode: 301,
-		},
 	}
 
 	for _, tt := range tests {

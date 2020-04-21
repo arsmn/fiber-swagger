@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gobuffalo/packr/v2"
 	"github.com/gofiber/embed"
 	"github.com/gofiber/fiber"
 	"github.com/markbates/pkger"
@@ -13,7 +12,6 @@ import (
 )
 
 var dir = pkger.Dir("/swaggerFiles")
-var box = packr.New("box", "./swaggerFiles")
 
 type Config struct {
 	Prefix      string
@@ -46,7 +44,7 @@ func New(config ...Config) func(*fiber.Ctx) {
 	}
 
 	if cfg.SwaggerRoot == nil {
-		cfg.SwaggerRoot = box
+		cfg.SwaggerRoot = dir
 	}
 
 	t := template.New("swagger_index.html")
