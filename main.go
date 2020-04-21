@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gobuffalo/packr/v2"
 	"github.com/gofiber/embed"
 	"github.com/gofiber/fiber"
 	"github.com/markbates/pkger"
@@ -12,6 +13,7 @@ import (
 )
 
 var dir = pkger.Dir("/swaggerFiles")
+var box = packr.New("box", "./swaggerFiles")
 
 type Config struct {
 	Prefix      string
@@ -28,11 +30,15 @@ func New(config ...Config) func(*fiber.Ctx) {
 	}
 
 	if cfg.Prefix == "" {
-		cfg.Prefix = "/swagger"
+		cfg.Prefix = "/swagger/"
 	}
 
 	if !strings.HasPrefix(cfg.Prefix, "/") {
 		cfg.Prefix = "/" + cfg.Prefix
+	}
+
+	if !strings.HasSuffix(cfg.Prefix, "/") {
+		cfg.Prefix = cfg.Prefix + "/"
 	}
 
 	if cfg.DocURL == "" {
@@ -40,7 +46,7 @@ func New(config ...Config) func(*fiber.Ctx) {
 	}
 
 	if cfg.SwaggerRoot == nil {
-		cfg.SwaggerRoot = dir
+		cfg.SwaggerRoot = box
 	}
 
 	t := template.New("swagger_index.html")
@@ -68,6 +74,9 @@ func New(config ...Config) func(*fiber.Ctx) {
 			return
 		}
 		p = strings.TrimPrefix(p, cfg.Prefix)
+		if !strings.HasPrefix(p, "/") {
+			p = "/" + p
+		}
 
 		switch p {
 		case "/index.html":
@@ -83,8 +92,6 @@ func New(config ...Config) func(*fiber.Ctx) {
 			}
 			c.Fasthttp.Response.SetBodyRaw([]byte(doc))
 			c.Fasthttp.SetContentType("application/json; charset=utf-8")
-		case "":
-			c.Redirect(cfg.Prefix+"/index.html", fiber.StatusMovedPermanently)
 		default:
 			fs(c)
 		}
