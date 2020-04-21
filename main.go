@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	_ "github.com/arsmn/fiber-swagger/docs"
 	"github.com/gofiber/embed"
 	"github.com/gofiber/fiber"
 	"github.com/markbates/pkger"
