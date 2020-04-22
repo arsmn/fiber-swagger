@@ -15,10 +15,10 @@ import (
 var dir = pkger.Dir("/swaggerFiles")
 
 type Config struct {
-	Prefix      string
-	DeepLinking bool
-	DocURL      string
-	SwaggerRoot http.FileSystem
+	Prefix             string
+	DisableDeepLinking bool
+	DocURL             string
+	SwaggerRoot        http.FileSystem
 }
 
 func New(config ...Config) func(*fiber.Ctx) {
@@ -79,10 +79,10 @@ func New(config ...Config) func(*fiber.Ctx) {
 			case "index.html":
 				index.Execute(c.Fasthttp.Response.BodyWriter(), &swaggerUIBundle{
 					URL:         cfg.DocURL,
-					DeepLinking: cfg.DeepLinking,
+					DeepLinking: !cfg.DisableDeepLinking,
 				})
 				c.Fasthttp.SetContentType("text/html; charset=utf-8")
-			case "doc.json":
+			case cfg.DocURL:
 				doc, _ := swag.ReadDoc()
 				c.Fasthttp.Response.SetBodyRaw([]byte(doc))
 				c.Fasthttp.SetContentType("application/json")
