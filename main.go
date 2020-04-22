@@ -2,6 +2,7 @@ package swagger
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 	"strings"
 
@@ -47,6 +48,10 @@ func New(config ...Config) func(*fiber.Ctx) {
 		cfg.SwaggerRoot = dir
 	}
 
+	if _, err := swag.ReadDoc(); err != nil {
+		log.Fatal(err)
+	}
+
 	t := template.New("swagger_index.html")
 	index, _ := t.Parse(indexTmpl)
 
@@ -67,32 +72,28 @@ func New(config ...Config) func(*fiber.Ctx) {
 		}
 
 		p := c.Path()
-		if !strings.HasPrefix(p, cfg.Prefix) {
-			c.Next()
+		if strings.HasPrefix(p, cfg.Prefix) || p == strings.TrimSuffix(cfg.Prefix, "/") {
+			p = strings.TrimPrefix(p, cfg.Prefix)
+
+			switch p {
+			case "index.html":
+				index.Execute(c.Fasthttp.Response.BodyWriter(), &swaggerUIBundle{
+					URL:         cfg.DocURL,
+					DeepLinking: cfg.DeepLinking,
+				})
+				c.Fasthttp.SetContentType("text/html; charset=utf-8")
+			case "doc.json":
+				doc, _ := swag.ReadDoc()
+				c.Fasthttp.Response.SetBodyRaw([]byte(doc))
+				c.Fasthttp.SetContentType("application/json")
+			case "", "/", cfg.Prefix, strings.TrimSuffix(cfg.Prefix, "/"):
+				c.Redirect(cfg.Prefix+"index.html", fiber.StatusMovedPermanently)
+			default:
+				fs(c)
+			}
 			return
 		}
-		p = strings.TrimPrefix(p, cfg.Prefix)
-		if !strings.HasPrefix(p, "/") {
-			p = "/" + p
-		}
-
-		switch p {
-		case "/index.html":
-			index.Execute(c.Fasthttp.Response.BodyWriter(), &swaggerUIBundle{
-				URL:         cfg.DocURL,
-				DeepLinking: cfg.DeepLinking,
-			})
-			c.Fasthttp.SetContentType("text/html; charset=utf-8")
-		case "/doc.json":
-			doc, err := swag.ReadDoc()
-			if err != nil {
-				panic(err)
-			}
-			c.Fasthttp.Response.SetBodyRaw([]byte(doc))
-			c.Fasthttp.SetContentType("application/json; charset=utf-8")
-		default:
-			fs(c)
-		}
+		c.Next()
 		return
 	}
 }

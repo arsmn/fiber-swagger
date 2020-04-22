@@ -11,7 +11,9 @@ import (
 func Test_Swagger(t *testing.T) {
 	app := *fiber.New()
 
-	app.Use(New())
+	app.Use(New(Config{
+		Prefix: "/swag",
+	}))
 
 	tests := []struct {
 		name        string
@@ -21,25 +23,30 @@ func Test_Swagger(t *testing.T) {
 	}{
 		{
 			name:        "Should be returns status 200 with 'text/html; charset=utf-8' content-type",
-			url:         "/swagger/index.html",
+			url:         "/swag/index.html",
 			statusCode:  200,
 			contentType: "text/html; charset=utf-8",
 		},
 		{
-			name:        "Should be returns status 200 with 'application/json; charset=utf-8' content-type",
-			url:         "/swagger/doc.json",
+			name:        "Should be returns status 200 with 'application/json' content-type",
+			url:         "/swag/doc.json",
 			statusCode:  200,
-			contentType: "application/json; charset=utf-8",
+			contentType: "application/json",
 		},
 		{
 			name:        "Should be returns status 200 with 'image/png' content-type",
-			url:         "/swagger/favicon-16x16.png",
+			url:         "/swag/favicon-16x16.png",
 			statusCode:  200,
 			contentType: "image/png",
 		},
 		{
+			name:       "Should return status 301",
+			url:        "/swag",
+			statusCode: 301,
+		},
+		{
 			name:       "Should return status 404",
-			url:        "/swagger/notfound",
+			url:        "/notfound",
 			statusCode: 404,
 		},
 	}

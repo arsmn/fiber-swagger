@@ -19,7 +19,9 @@ import (
 func main() {
 	app := fiber.New()
 
-	app.Use(fiberSwagger.New())
+	app.Use(fiberSwagger.New(fiberSwagger.Config{
+		Prefix: "/swag",
+	}))
 
 	app.Listen(8080)
 }
