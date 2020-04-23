@@ -8,11 +8,9 @@ import (
 
 	"github.com/gofiber/embed"
 	"github.com/gofiber/fiber"
-	"github.com/markbates/pkger"
+	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
 )
-
-var dir = pkger.Dir("/swaggerFiles")
 
 type Config struct {
 	Prefix             string
@@ -45,7 +43,7 @@ func New(config ...Config) func(*fiber.Ctx) {
 	}
 
 	if cfg.SwaggerRoot == nil {
-		cfg.SwaggerRoot = dir
+		cfg.SwaggerRoot = swaggerFiles.HTTP
 	}
 
 	if _, err := swag.ReadDoc(); err != nil {
