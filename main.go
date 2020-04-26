@@ -77,8 +77,7 @@ func New(config ...Config) func(*fiber.Ctx) {
 				c.Type("html")
 			case cfg.DocURL:
 				doc, _ := swag.ReadDoc()
-				c.SendString(doc)
-				c.Type("json")
+				c.Type("json").SendString(doc)
 			case "", "/", cfg.Prefix, strings.TrimSuffix(cfg.Prefix, "/"):
 				c.Redirect(cfg.Prefix+"index.html", fiber.StatusMovedPermanently)
 			default:
