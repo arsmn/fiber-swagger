@@ -6,13 +6,15 @@ import (
 
 	_ "github.com/arsmn/fiber-swagger/example/docs"
 	"github.com/gofiber/fiber"
+	swaggerFiles "github.com/swaggo/files"
 )
 
 func Test_Swagger(t *testing.T) {
 	app := *fiber.New()
 
 	app.Use(New(Config{
-		Prefix: "/swag",
+		Prefix:      "/swag",
+		SwaggerRoot: swaggerFiles.HTTP,
 	}))
 
 	tests := []struct {

@@ -9,7 +9,6 @@ import (
 
 	"github.com/gofiber/embed"
 	"github.com/gofiber/fiber"
-	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
 )
 
@@ -50,7 +49,7 @@ func New(config ...Config) func(*fiber.Ctx) {
 	}
 
 	if cfg.SwaggerRoot == nil {
-		cfg.SwaggerRoot = swaggerFiles.HTTP
+		log.Fatal("Fiber: Swagger middleware requires root to serve files")
 	}
 
 	doc, err := swag.ReadDoc()
