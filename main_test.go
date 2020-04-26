@@ -13,7 +13,6 @@ func Test_Swagger(t *testing.T) {
 
 	app.Use(New(Config{
 		Prefix: "/swag",
-		DocURL: "swagger-doc.json",
 	}))
 
 	tests := []struct {
@@ -30,7 +29,7 @@ func Test_Swagger(t *testing.T) {
 		},
 		{
 			name:        "Should be returns status 200 with 'application/json' content-type",
-			url:         "/swag/swagger-doc.json",
+			url:         "/swag/doc.json",
 			statusCode:  200,
 			contentType: "application/json",
 		},
