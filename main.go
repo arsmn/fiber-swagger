@@ -1,6 +1,7 @@
 package swagger
 
 import (
+	"bytes"
 	"html/template"
 	"log"
 	"net/http"
@@ -10,6 +11,12 @@ import (
 	"github.com/gofiber/fiber"
 	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
+)
+
+const (
+	defaultPrefix = "/swagger/"
+	defaultDocURL = "doc.json"
+	defaultIndex  = "index.html"
 )
 
 type Config struct {
@@ -27,7 +34,7 @@ func New(config ...Config) func(*fiber.Ctx) {
 	}
 
 	if cfg.Prefix == "" {
-		cfg.Prefix = "/swagger/"
+		cfg.Prefix = defaultPrefix
 	}
 
 	if !strings.HasPrefix(cfg.Prefix, "/") {
@@ -39,19 +46,25 @@ func New(config ...Config) func(*fiber.Ctx) {
 	}
 
 	if cfg.DocURL == "" {
-		cfg.DocURL = "doc.json"
+		cfg.DocURL = cfg.Prefix + defaultDocURL
 	}
 
 	if cfg.SwaggerRoot == nil {
 		cfg.SwaggerRoot = swaggerFiles.HTTP
 	}
 
-	if _, err := swag.ReadDoc(); err != nil {
-		log.Fatal(err)
+	doc, err := swag.ReadDoc()
+	if err != nil {
+		log.Fatal("Fiber: Swag is not registerd")
 	}
 
-	t := template.New("swagger_index.html")
-	index, _ := t.Parse(indexTmpl)
+	index, err := renderIndex(swaggerUIBundle{
+		URL:         cfg.DocURL,
+		DeepLinking: !cfg.DisableDeepLinking,
+	})
+	if err != nil {
+		log.Fatal("Fiber: Swagger middleware could not render index")
+	}
 
 	fs := embed.New(embed.Config{
 		Prefix: cfg.Prefix,
@@ -69,17 +82,12 @@ func New(config ...Config) func(*fiber.Ctx) {
 			p = strings.TrimPrefix(p, cfg.Prefix)
 
 			switch p {
-			case "index.html":
-				index.Execute(c.Fasthttp.Response.BodyWriter(), &swaggerUIBundle{
-					URL:         cfg.DocURL,
-					DeepLinking: !cfg.DisableDeepLinking,
-				})
-				c.Type("html")
-			case cfg.DocURL:
-				doc, _ := swag.ReadDoc()
+			case defaultIndex:
+				c.Type("html").SendString(index)
+			case defaultDocURL:
 				c.Type("json").SendString(doc)
 			case "", "/", cfg.Prefix, strings.TrimSuffix(cfg.Prefix, "/"):
-				c.Redirect(cfg.Prefix+"index.html", fiber.StatusMovedPermanently)
+				c.Redirect(cfg.Prefix+defaultIndex, fiber.StatusMovedPermanently)
 			default:
 				fs(c)
 			}
@@ -94,6 +102,18 @@ func New(config ...Config) func(*fiber.Ctx) {
 type swaggerUIBundle struct {
 	URL         string
 	DeepLinking bool
+}
+
+func renderIndex(data swaggerUIBundle) (string, error) {
+	index, err := template.New("swagger_index.html").Parse(indexTmpl)
+	if err != nil {
+		return "", err
+	}
+	var buf bytes.Buffer
+	if err := index.Execute(&buf, data); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 const indexTmpl = `
