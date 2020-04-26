@@ -23,10 +23,10 @@ func Test_Swagger(t *testing.T) {
 		contentType string
 	}{
 		{
-			name:        "Should be returns status 200 with 'text/html; charset=utf-8' content-type",
+			name:        "Should be returns status 200 with 'text/html' content-type",
 			url:         "/swag/index.html",
 			statusCode:  200,
-			contentType: "text/html; charset=utf-8",
+			contentType: "text/html",
 		},
 		{
 			name:        "Should be returns status 200 with 'application/json' content-type",

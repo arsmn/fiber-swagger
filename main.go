@@ -58,11 +58,6 @@ func New(config ...Config) func(*fiber.Ctx) {
 		Root:   cfg.SwaggerRoot,
 	})
 
-	type swaggerUIBundle struct {
-		URL         string
-		DeepLinking bool
-	}
-
 	return func(c *fiber.Ctx) {
 		if c.Method() != fiber.MethodGet {
 			c.Next()
@@ -79,11 +74,11 @@ func New(config ...Config) func(*fiber.Ctx) {
 					URL:         cfg.DocURL,
 					DeepLinking: !cfg.DisableDeepLinking,
 				})
-				c.Fasthttp.SetContentType("text/html; charset=utf-8")
+				c.Type("html")
 			case cfg.DocURL:
 				doc, _ := swag.ReadDoc()
-				c.Fasthttp.Response.SetBodyRaw([]byte(doc))
-				c.Fasthttp.SetContentType("application/json")
+				c.SendString(doc)
+				c.Type("json")
 			case "", "/", cfg.Prefix, strings.TrimSuffix(cfg.Prefix, "/"):
 				c.Redirect(cfg.Prefix+"index.html", fiber.StatusMovedPermanently)
 			default:
@@ -91,9 +86,15 @@ func New(config ...Config) func(*fiber.Ctx) {
 			}
 			return
 		}
+
 		c.Next()
 		return
 	}
+}
+
+type swaggerUIBundle struct {
+	URL         string
+	DeepLinking bool
 }
 
 const indexTmpl = `
