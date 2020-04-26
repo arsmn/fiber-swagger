@@ -55,7 +55,7 @@ func main() {
 	app.Use(fiberSwagger.New(
 		Prefix: "/swagger" // optional. default is /swagger
 		SwaggerRoot: swaggerFiles.HTTP // required 
-		// Or you can use local files if you don't want to use embedded files
+		// Or you can use local files if you don't want to use embedded files (reduces build size)
 		// SwaggerRoot: http.Dir("/<Your swagger fiels directory>")
 	))
 
