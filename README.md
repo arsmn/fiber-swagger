@@ -53,7 +53,7 @@ func main() {
 
 	app.Use("/swagger", swagger.Handler) // default
 
-	app.Use("/swagger", swagger.New(fiberSwagger.Config{ // custom
+	app.Use("/swagger", swagger.New(swagger.Config{ // custom
 		DocURL: "http://example.com/doc.json",
 		DeepLinking: false,
 	}))
