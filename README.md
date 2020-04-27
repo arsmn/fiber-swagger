@@ -52,12 +52,12 @@ import (
 func main() {
 	app := fiber.New()
 
-	app.Use(fiberSwagger.New(
-		Prefix: "/swagger" // optional. default is /swagger
-		SwaggerRoot: swaggerFiles.HTTP // required 
-		// Or you can use local files if you don't want to use embedded files (reduces build size)
-		// SwaggerRoot: http.Dir("/<Your swagger fiels directory>")
-	))
+	app.Use("/swagger", fiberSwagger.Handler) // default
+
+	app.Use("/swagger", fiberSwagger.New(fiberSwagger.Config{ // custom
+		DocURL: "http://example.com/doc.json",
+		DeepLinking: false,
+	}))
 
 	app.Listen(8080)
 }

@@ -1,118 +1,87 @@
 package swagger
 
 import (
-	"bytes"
 	"html/template"
 	"log"
-	"net/http"
 	"strings"
 
 	"github.com/gofiber/embed"
 	"github.com/gofiber/fiber"
+	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
 )
 
 const (
-	defaultPrefix = "/swagger/"
-	defaultDocURL = "doc.json"
-	defaultIndex  = "index.html"
+	defaultDocURL = "/doc.json"
+	defaultIndex  = "/index.html"
 )
 
+// Handler default
+var Handler = New()
+
+// Config ...
 type Config struct {
-	Prefix             string
-	DisableDeepLinking bool
-	DocURL             string
-	SwaggerRoot        http.FileSystem
+	DeepLinking bool
+	URL         string
 }
 
+// New returns custom handler
 func New(config ...Config) func(*fiber.Ctx) {
-	var cfg Config
+	cfg := Config{
+		DeepLinking: true,
+	}
 
 	if len(config) > 0 {
 		cfg = config[0]
 	}
 
-	if cfg.Prefix == "" {
-		cfg.Prefix = defaultPrefix
-	}
-
-	if !strings.HasPrefix(cfg.Prefix, "/") {
-		cfg.Prefix = "/" + cfg.Prefix
-	}
-
-	if !strings.HasSuffix(cfg.Prefix, "/") {
-		cfg.Prefix = cfg.Prefix + "/"
-	}
-
-	if cfg.DocURL == "" {
-		cfg.DocURL = cfg.Prefix + defaultDocURL
-	}
-
-	if cfg.SwaggerRoot == nil {
-		log.Fatal("Fiber: Swagger middleware requires root to serve files")
-	}
-
-	doc, err := swag.ReadDoc()
+	index, err := template.New("swagger_index.html").Parse(indexTmpl)
 	if err != nil {
-		log.Fatal("Fiber: Swag is not registerd")
-	}
-
-	index, err := renderIndex(swaggerUIBundle{
-		URL:         cfg.DocURL,
-		DeepLinking: !cfg.DisableDeepLinking,
-	})
-	if err != nil {
-		log.Fatal("Fiber: Swagger middleware could not render index")
+		log.Fatal("Fiber: Swagger middleware could not parse index")
 	}
 
 	fs := embed.New(embed.Config{
-		Prefix: cfg.Prefix,
-		Root:   cfg.SwaggerRoot,
+		Root: swaggerFiles.HTTP,
 	})
 
+	var prefix string
 	return func(c *fiber.Ctx) {
+
+		// accept only GET requests
 		if c.Method() != fiber.MethodGet {
 			c.Next()
 			return
 		}
 
-		p := c.Path()
-		if strings.HasPrefix(p, cfg.Prefix) || p == strings.TrimSuffix(cfg.Prefix, "/") {
-			p = strings.TrimPrefix(p, cfg.Prefix)
-
-			switch p {
-			case defaultIndex:
-				c.Type("html").SendString(index)
-			case defaultDocURL:
-				c.Type("json").SendString(doc)
-			case "", "/", cfg.Prefix, strings.TrimSuffix(cfg.Prefix, "/"):
-				c.Redirect(cfg.Prefix+defaultIndex, fiber.StatusMovedPermanently)
-			default:
-				fs(c)
+		// Set prefix
+		if len(prefix) == 0 {
+			prefix = c.Route().Path
+			// Set doc url
+			if len(cfg.URL) == 0 {
+				cfg.URL = prefix + defaultDocURL
 			}
-			return
 		}
 
-		c.Next()
+		// Strip prefix
+		path := strings.TrimPrefix(c.Path(), prefix)
+		if !strings.HasPrefix(path, "/") {
+			path = "/" + path
+		}
+
+		switch path {
+		case defaultIndex:
+			index.Execute(c.Fasthttp, cfg)
+			c.Type("html")
+		case defaultDocURL:
+			doc, _ := swag.ReadDoc()
+			c.Type("json").SendString(doc)
+		case "", "/":
+			c.Redirect(prefix+defaultIndex, fiber.StatusMovedPermanently)
+		default:
+			fs(c)
+		}
 		return
 	}
-}
-
-type swaggerUIBundle struct {
-	URL         string
-	DeepLinking bool
-}
-
-func renderIndex(data swaggerUIBundle) (string, error) {
-	index, err := template.New("swagger_index.html").Parse(indexTmpl)
-	if err != nil {
-		return "", err
-	}
-	var buf bytes.Buffer
-	if err := index.Execute(&buf, data); err != nil {
-		return "", err
-	}
-	return buf.String(), nil
 }
 
 const indexTmpl = `

@@ -6,16 +6,12 @@ import (
 
 	_ "github.com/arsmn/fiber-swagger/example/docs"
 	"github.com/gofiber/fiber"
-	swaggerFiles "github.com/swaggo/files"
 )
 
 func Test_Swagger(t *testing.T) {
 	app := *fiber.New()
 
-	app.Use(New(Config{
-		Prefix:      "/swag",
-		SwaggerRoot: swaggerFiles.HTTP,
-	}))
+	app.Use("/swag", Handler)
 
 	tests := []struct {
 		name        string
@@ -43,7 +39,7 @@ func Test_Swagger(t *testing.T) {
 		},
 		{
 			name:       "Should return status 301",
-			url:        "/swag",
+			url:        "/swag/",
 			statusCode: 301,
 		},
 		{
