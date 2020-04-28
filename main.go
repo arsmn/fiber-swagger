@@ -58,14 +58,14 @@ func New(config ...Config) func(*fiber.Ctx) {
 			prefix = c.Route().Path
 			// Set doc url
 			if len(cfg.URL) == 0 {
-				cfg.URL = makeURL(prefix, defaultDocURL)
+				cfg.URL = buildURL(prefix, defaultDocURL)
 			}
 		}
 
-		path := c.Path()
 		// Strip prefix
-		if prefix != "/" {
-			path = strings.TrimPrefix(c.Path(), prefix)
+		path := strings.TrimPrefix(c.Path(), prefix)
+		if !strings.HasPrefix(path, "/") {
+			path = "/" + path
 		}
 
 		switch path {
@@ -76,15 +76,14 @@ func New(config ...Config) func(*fiber.Ctx) {
 			doc, _ := swag.ReadDoc()
 			c.Type("json").SendString(doc)
 		case "", "/":
-			c.Redirect(makeURL(prefix, defaultIndex), fiber.StatusMovedPermanently)
+			c.Redirect(buildURL(prefix, defaultIndex), fiber.StatusMovedPermanently)
 		default:
 			fs(c)
 		}
-		return
 	}
 }
 
-func makeURL(prefix, path string) string {
+func buildURL(prefix, path string) string {
 	if strings.HasSuffix(prefix, "/") {
 		return prefix + strings.TrimPrefix(path, "/")
 	}
