@@ -3,6 +3,7 @@ package swagger
 import (
 	"html/template"
 	"log"
+	"path"
 	"strings"
 
 	"github.com/gofiber/embed"
@@ -58,17 +59,17 @@ func New(config ...Config) func(*fiber.Ctx) {
 			prefix = c.Route().Path
 			// Set doc url
 			if len(cfg.URL) == 0 {
-				cfg.URL = buildURL(prefix, defaultDocURL)
+				cfg.URL = path.Join(prefix, defaultDocURL)
 			}
 		}
 
 		// Strip prefix
-		path := strings.TrimPrefix(c.Path(), prefix)
-		if !strings.HasPrefix(path, "/") {
-			path = "/" + path
+		p := strings.TrimPrefix(c.Path(), prefix)
+		if !strings.HasPrefix(p, "/") {
+			p = "/" + p
 		}
 
-		switch path {
+		switch p {
 		case defaultIndex:
 			index.Execute(c.Fasthttp, cfg)
 			c.Type("html")
@@ -76,18 +77,11 @@ func New(config ...Config) func(*fiber.Ctx) {
 			doc, _ := swag.ReadDoc()
 			c.Type("json").SendString(doc)
 		case "", "/":
-			c.Redirect(buildURL(prefix, defaultIndex), fiber.StatusMovedPermanently)
+			c.Redirect(path.Join(prefix, defaultIndex), fiber.StatusMovedPermanently)
 		default:
 			fs(c)
 		}
 	}
-}
-
-func buildURL(prefix, path string) string {
-	if strings.HasSuffix(prefix, "/") {
-		return prefix + strings.TrimPrefix(path, "/")
-	}
-	return prefix + "/" + strings.TrimPrefix(path, "/")
 }
 
 const indexTmpl = `
