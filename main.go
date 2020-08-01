@@ -6,8 +6,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/gofiber/embed"
 	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/middleware"
 	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
 )
@@ -41,9 +41,7 @@ func New(config ...Config) func(*fiber.Ctx) {
 		log.Fatal("Fiber: Swagger middleware could not parse index")
 	}
 
-	fs := embed.New(embed.Config{
-		Root: swaggerFiles.HTTP,
-	})
+	fs := middleware.FileSystem(swaggerFiles.HTTP)
 
 	var prefix string
 	return func(c *fiber.Ctx) {
