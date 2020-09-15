@@ -3,7 +3,7 @@ package main
 import (
 	fiberSwagger "github.com/arsmn/fiber-swagger"
 	_ "github.com/arsmn/fiber-swagger/example/docs"
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 )
 
 // @title Fiber Example API
@@ -23,7 +23,7 @@ func main() {
 
 	app.Get("/accounts/:id", ShowAccount)
 
-	app.Listen(8080)
+	app.Listen(":8080")
 }
 
 // ShowAccount godoc
@@ -38,8 +38,8 @@ func main() {
 // @Failure 404 {object} HTTPError
 // @Failure 500 {object} HTTPError
 // @Router /accounts/{id} [get]
-func ShowAccount(c *fiber.Ctx) {
-	c.JSON(Account{
+func ShowAccount(c *fiber.Ctx) error {
+	return c.JSON(Account{
 		Id: c.Params("id"),
 	})
 }
