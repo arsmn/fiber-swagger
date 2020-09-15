@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	_ "github.com/arsmn/fiber-swagger/example/docs"
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 )
 
 func Test_Swagger(t *testing.T) {

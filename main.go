@@ -6,8 +6,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/gofiber/fiber"
-	"github.com/gofiber/fiber/middleware"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
 )
@@ -27,7 +27,7 @@ type Config struct {
 }
 
 // New returns custom handler
-func New(config ...Config) func(*fiber.Ctx) {
+func New(config ...Config) fiber.Handler {
 	cfg := Config{
 		DeepLinking: true,
 	}
@@ -41,15 +41,14 @@ func New(config ...Config) func(*fiber.Ctx) {
 		log.Fatal("Fiber: Swagger middleware could not parse index")
 	}
 
-	fs := middleware.FileSystem(swaggerFiles.HTTP)
+	fs := filesystem.New(filesystem.Config{Root: swaggerFiles.HTTP})
 
 	var prefix string
-	return func(c *fiber.Ctx) {
+	return func(c *fiber.Ctx) error {
 
 		// accept only GET requests
 		if c.Method() != fiber.MethodGet {
-			c.Next()
-			return
+			return c.Next()
 		}
 
 		// Set prefix
@@ -69,15 +68,22 @@ func New(config ...Config) func(*fiber.Ctx) {
 
 		switch p {
 		case defaultIndex:
-			index.Execute(c.Fasthttp, cfg)
+			err = index.Execute(c, cfg)
+			if err != nil {
+				return err
+			}
 			c.Type("html")
+			return nil
 		case defaultDocURL:
-			doc, _ := swag.ReadDoc()
-			c.Type("json").SendString(doc)
+			doc, err := swag.ReadDoc()
+			if err != nil {
+				return err
+			}
+			return c.Type("json").SendString(doc)
 		case "", "/":
-			c.Redirect(path.Join(prefix, defaultIndex), fiber.StatusMovedPermanently)
+			return c.Redirect(path.Join(prefix, defaultIndex), fiber.StatusMovedPermanently)
 		default:
-			fs(c)
+			return fs(c)
 		}
 	}
 }
