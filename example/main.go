@@ -19,7 +19,7 @@ import (
 func main() {
 	app := fiber.New()
 
-	app.Use("/swagger", fiberSwagger.Handler)
+	app.Get("/swagger/*", fiberSwagger.Handler)
 
 	app.Get("/accounts/:id", ShowAccount)
 

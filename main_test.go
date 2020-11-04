@@ -11,7 +11,7 @@ import (
 func Test_Swagger(t *testing.T) {
 	app := *fiber.New()
 
-	app.Use("/swag", Handler)
+	app.Get("/swag/*", Handler)
 
 	tests := []struct {
 		name        string

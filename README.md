@@ -51,9 +51,9 @@ import (
 func main() {
 	app := fiber.New()
 
-	app.Use("/swagger", swagger.Handler) // default
+	app.Get("/swagger/*", swagger.Handler) // default
 
-	app.Use("/swagger", swagger.New(swagger.Config{ // custom
+	app.Get("/swagger/*", swagger.New(swagger.Config{ // custom
 		URL: "http://example.com/doc.json",
 		DeepLinking: false,
 	}))

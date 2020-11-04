@@ -5,16 +5,18 @@ import (
 	"log"
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
+	"github.com/gofiber/fiber/v2/utils"
 	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
 )
 
 const (
-	defaultDocURL = "/doc.json"
-	defaultIndex  = "/index.html"
+	defaultDocURL = "doc.json"
+	defaultIndex  = "index.html"
 )
 
 // Handler default
@@ -43,33 +45,25 @@ func New(config ...Config) fiber.Handler {
 
 	fs := filesystem.New(filesystem.Config{Root: swaggerFiles.HTTP})
 
-	var prefix string
+	var (
+		prefix string
+		once   sync.Once
+	)
+
 	return func(c *fiber.Ctx) error {
 
-		// accept only GET requests
-		if c.Method() != fiber.MethodGet {
-			return c.Next()
-		}
-
 		// Set prefix
-		if len(prefix) == 0 {
-			prefix = c.Route().Path
+		once.Do(func() {
+			prefix = strings.ReplaceAll(c.Route().Path, "*", "")
 			// Set doc url
 			if len(cfg.URL) == 0 {
 				cfg.URL = path.Join(prefix, defaultDocURL)
 			}
-		}
+		})
 
-		// Strip prefix
-		p := strings.TrimPrefix(c.Path(), prefix)
-		if !strings.HasPrefix(p, "/") {
-			p = "/" + p
-		}
-
-		switch p {
+		switch p := utils.ImmutableString(c.Params("*")); p {
 		case defaultIndex:
-			err = index.Execute(c, cfg)
-			if err != nil {
+			if err := index.Execute(c, cfg); err != nil {
 				return err
 			}
 			c.Type("html")
@@ -83,6 +77,7 @@ func New(config ...Config) fiber.Handler {
 		case "", "/":
 			return c.Redirect(path.Join(prefix, defaultIndex), fiber.StatusMovedPermanently)
 		default:
+			c.Path(p)
 			return fs(c)
 		}
 	}
