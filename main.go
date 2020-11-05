@@ -59,7 +59,15 @@ func New(config ...Config) fiber.Handler {
 			}
 		})
 
-		switch p := utils.ImmutableString(c.Params("*")); p {
+		var p string
+		if p = utils.ImmutableString(c.Params("*")); p != "" {
+			c.Path(p)
+		} else {
+			p = strings.TrimPrefix(c.Path(), prefix)
+			p = strings.TrimPrefix(p, "/")
+		}
+
+		switch p {
 		case defaultIndex:
 			if err := index.Execute(c, cfg); err != nil {
 				return err
@@ -75,7 +83,6 @@ func New(config ...Config) fiber.Handler {
 		case "", "/":
 			return c.Redirect(path.Join(prefix, defaultIndex), fiber.StatusMovedPermanently)
 		default:
-			c.Path(p)
 			return fs(c)
 		}
 	}
