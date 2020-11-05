@@ -2,7 +2,6 @@ package swagger
 
 import (
 	"html/template"
-	"log"
 	"path"
 	"strings"
 	"sync"
@@ -40,14 +39,13 @@ func New(config ...Config) fiber.Handler {
 
 	index, err := template.New("swagger_index.html").Parse(indexTmpl)
 	if err != nil {
-		log.Fatal("Fiber: Swagger middleware could not parse index")
+		panic("swagger: could not parse index template")
 	}
-
-	fs := filesystem.New(filesystem.Config{Root: swaggerFiles.HTTP})
 
 	var (
 		prefix string
 		once   sync.Once
+		fs     fiber.Handler = filesystem.New(filesystem.Config{Root: swaggerFiles.HTTP})
 	)
 
 	return func(c *fiber.Ctx) error {
