@@ -8,11 +8,11 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/alecthomas/template"
 	"github.com/swaggo/swag"
+	"text/template"
 )
 
-var doc = `{
+const doc string = `{
     "schemes": {{ marshal .Schemes }},
     "swagger": "2.0",
     "info": {
@@ -96,15 +96,6 @@ var doc = `{
     }
 }`
 
-type swaggerInfo struct {
-	Version     string
-	Host        string
-	BasePath    string
-	Schemes     []string
-	Title       string
-	Description string
-}
-
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
 	Version:     "1.0",
@@ -115,7 +106,21 @@ var SwaggerInfo = swaggerInfo{
 	Description: "This is a sample swagger for Fiber",
 }
 
-type s struct{}
+type (
+	swaggerInfo struct {
+		Version     string
+		Host        string
+		BasePath    string
+		Schemes     []string
+		Title       string
+		Description string
+	}
+	s struct{}
+)
+
+func init() {
+	swag.Register(swag.Name, &s{})
+}
 
 func (s *s) ReadDoc() string {
 	sInfo := SwaggerInfo
@@ -137,8 +142,4 @@ func (s *s) ReadDoc() string {
 	}
 
 	return tpl.String()
-}
-
-func init() {
-	swag.Register(swag.Name, &s{})
 }

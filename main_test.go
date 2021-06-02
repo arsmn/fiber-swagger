@@ -69,5 +69,4 @@ func Test_Swagger(t *testing.T) {
 			}
 		})
 	}
-
 }
