@@ -73,9 +73,21 @@ window.onload = function() {
     plugins: [
       SwaggerUIBundle.plugins.DownloadUrl
     ],
-	layout: "StandaloneLayout",
-	deepLinking: {{.DeepLinking}}
+    layout: "StandaloneLayout",
+    deepLinking: {{.DeepLinking}},
+    docExpansion: "{{.DocExpansion}}",
+    {{if .OAuth2RedirectUrl}}
+    oauth2RedirectUrl: {{.OAuth2RedirectUrl}},
+    {{end}}
   })
+
+  {{if .OAuth}}
+  ui.initOAuth({
+    appName: "{{.OAuth.AppName}}",
+    clientId: "{{.OAuth.ClientId}}"
+  })
+  {{end}}
+
   window.ui = ui
 }
 </script>
