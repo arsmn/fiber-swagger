@@ -21,16 +21,40 @@ const (
 // Handler default
 var Handler = New()
 
-// Config ...
+// Config stores SwaggerUI configuration variables
 type Config struct {
+	// Enable deep linking for tags and operations, default is true
 	DeepLinking bool
-	URL         string
+
+	// Controls the default expansion setting for the operations and tags.
+	// 'list' (default, expands only the tags),
+	// 'full' (expands the tags and operations),
+	// 'none' (expands nothing)
+	DocExpansion string
+
+	// Configuration information for OAuth2, optional if using OAuth2
+	OAuth *OAuthConfig
+
+	// Custom OAuth redirect URL
+	OAuth2RedirectUrl string
+
+	// URL pointing to API definition
+	URL string
+}
+
+type OAuthConfig struct {
+	// application name, displayed in authorization popup
+	AppName string
+
+	// ID of the client sent to the OAuth2 Provider, default is clientId
+	ClientId string
 }
 
 // New returns custom handler
 func New(config ...Config) fiber.Handler {
 	cfg := Config{
-		DeepLinking: true,
+		DeepLinking:  true,
+		DocExpansion: "list",
 	}
 
 	if len(config) > 0 {
