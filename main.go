@@ -48,11 +48,11 @@ type Config struct {
 
 	// An array of plugin functions to use in Swagger UI.
 	// default: [SwaggerUIBundle.plugins.DownloadUrl]
-	Plugins []template.JS `json:"plugins,omitempty"`
+	Plugins []template.JS `json:"-"`
 
 	// An array of presets to use in Swagger UI. Usually, you'll want to include ApisPreset if you use this option.
 	// default: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset]
-	Presets []template.JS `json:"presets,omitempty"`
+	Presets []template.JS `json:"-"`
 
 	// If set to true, enables deep linking for tags and operations.
 	// default: true
@@ -89,7 +89,7 @@ type Config struct {
 	// Can be Boolean to enable or disable, or a string, in which case filtering will be enabled using that string as the filter expression.
 	// Filtering is case sensitive matching the filter expression anywhere inside the tag.
 	// default: false
-	Filter interface{} `json:"filter,omitempty"`
+	Filter FilterConfig `json:"-"`
 
 	// If set, limits the number of tagged operations displayed to at most this many. The default is to show all operations.
 	// default: 0
@@ -106,11 +106,11 @@ type Config struct {
 	// Apply a sort to the tag list of each API. It can be 'alpha' (sort by paths alphanumerically) or a function (see Array.prototype.sort().
 	// to learn how to write a sort function). Two tag name strings are passed to the sorter for each pass.
 	// default: "" -> Default is the order determined by Swagger UI.
-	TagsSorter template.JS `json:"tagsSorter,omitempty"`
+	TagsSorter template.JS `json:"-"`
 
 	// Provides a mechanism to be notified when Swagger UI has finished rendering a newly provided definition.
 	// default: "" -> Function=NOOP
-	OnComplete template.JS `json:"onComplete,omitempty"`
+	OnComplete template.JS `json:"-"`
 
 	// An object with the activate and theme properties.
 	SyntaxHighlight SyntaxHighlightConfig `json:"syntaxHighlight,omitempty"`
@@ -130,7 +130,7 @@ type Config struct {
 	// MUST be a function. Function to intercept remote definition, "Try it out", and OAuth 2.0 requests.
 	// Accepts one argument requestInterceptor(request) and must return the modified request, or a Promise that resolves to the modified request.
 	// default: ""
-	RequestInterceptor template.JS `json:"requestInterceptor,omitempty"`
+	RequestInterceptor template.JS `json:"-"`
 
 	// If set, MUST be an array of command line options available to the curl command. This can be set on the mutated request in the requestInterceptor function.
 	// For example request.curlOptions = ["-g", "--limit-rate 20k"]
@@ -140,7 +140,7 @@ type Config struct {
 	// MUST be a function. Function to intercept remote definition, "Try it out", and OAuth 2.0 responses.
 	// Accepts one argument responseInterceptor(response) and must return the modified response, or a Promise that resolves to the modified response.
 	// default: ""
-	ResponseInterceptor template.JS `json:"responseInterceptor,omitempty"`
+	ResponseInterceptor template.JS `json:"-"`
 
 	// If set to true, uses the mutated request returned from a requestInterceptor to produce the curl command in the UI,
 	// otherwise the request before the requestInterceptor was applied is used.
@@ -167,30 +167,42 @@ type Config struct {
 
 	// Function to set default values to each property in model. Accepts one argument modelPropertyMacro(property), property is immutable.
 	// default: ""
-	ModelPropertyMacro template.JS `json:"modelPropertyMacro,omitempty"`
+	ModelPropertyMacro template.JS `json:"-"`
 
 	// Function to set default value to parameters. Accepts two arguments parameterMacro(operation, parameter).
 	// Operation and parameter are objects passed for context, both remain immutable.
 	// default: ""
-	ParameterMacro template.JS `json:"parameterMacro,omitempty"`
+	ParameterMacro template.JS `json:"-"`
 
 	// If set to true, it persists authorization data and it would not be lost on browser close/refresh.
 	// default: false
 	PersistAuthorization bool `json:"persistAuthorization,omitempty"`
 
 	// Configuration information for OAuth2, optional if using OAuth2
-	OAuth *OAuthConfig
+	OAuth *OAuthConfig `json:"-"`
 
 	// (authDefinitionKey, username, password) => action
 	// Programmatically set values for a Basic authorization scheme.
 	// default: ""
-	PreauthorizeBasic template.JS `json:"preauthorizeBasic,omitempty"`
+	PreauthorizeBasic template.JS `json:"-"`
 
 	// (authDefinitionKey, apiKeyValue) => action
 	// Programmatically set values for an API key or Bearer authorization scheme.
 	// In case of OpenAPI 3.0 Bearer scheme, apiKeyValue must contain just the token itself without the Bearer prefix.
 	// default: ""
-	PreauthorizeApiKey template.JS `json:"preauthorizeApiKey,omitempty"`
+	PreauthorizeApiKey template.JS `json:"-"`
+}
+
+type FilterConfig struct {
+	Enabled    bool
+	Expression string
+}
+
+func (fc FilterConfig) Value() interface{} {
+	if fc.Expression != "" {
+		return fc.Expression
+	}
+	return fc.Enabled
 }
 
 type SyntaxHighlightConfig struct {
@@ -260,7 +272,6 @@ func New(config ...Config) fiber.Handler {
 		DefaultModelExpandDepth:  1,
 		DefaultModelRendering:    "example",
 		DocExpansion:             "list",
-		Filter:                   false,
 		SyntaxHighlight: SyntaxHighlightConfig{
 			Activate: true,
 			Theme:    "agate",
