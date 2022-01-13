@@ -61,38 +61,39 @@ const indexTmpl string = `
     <script src="./swagger-ui-standalone-preset.js"> </script>
     <script>
     window.onload = function() {
-      bundle = {{.}};
-      bundle.plugins = [
+      config = {{.}};
+      config.dom_id = '#swagger-ui';
+      config.plugins = [
         {{- range $plugin := .Plugins }}
           {{$plugin}},
         {{- end}}
       ];
-      bundle.presets = [
+      config.presets = [
         {{- range $preset := .Presets }}
           {{$preset}},
         {{- end}}
       ];
-      bundle.filter = {{.Filter.Value}}
+      config.filter = {{.Filter.Value}}
       {{if .TagsSorter}}
-        bundle.tagsSorter = {{.TagsSorter}}
+        config.tagsSorter = {{.TagsSorter}}
       {{end}}
       {{if .OnComplete}}
-        bundle.onComplete = {{.OnComplete}}
+        config.onComplete = {{.OnComplete}}
       {{end}}
       {{if .RequestInterceptor}}
-        bundle.requestInterceptor = {{.RequestInterceptor}}
+        config.requestInterceptor = {{.RequestInterceptor}}
       {{end}}
       {{if .ResponseInterceptor}}
-        bundle.responseInterceptor = {{.ResponseInterceptor}}
+        config.responseInterceptor = {{.ResponseInterceptor}}
       {{end}}
       {{if .ModelPropertyMacro}}
-        bundle.modelPropertyMacro = {{.ModelPropertyMacro}}
+        config.modelPropertyMacro = {{.ModelPropertyMacro}}
       {{end}}
       {{if .ParameterMacro}}
-        bundle.parameterMacro = {{.ParameterMacro}}
+        config.parameterMacro = {{.ParameterMacro}}
       {{end}}
 
-      const ui = SwaggerUIBundle(bundle);
+      const ui = SwaggerUIBundle(config);
 
       {{if .OAuth}}
         ui.initOAuth({{.OAuth}});
