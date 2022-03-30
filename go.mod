@@ -3,7 +3,7 @@ module github.com/arsmn/fiber-swagger/v2
 go 1.16
 
 require (
-	github.com/gofiber/fiber/v2 v2.24.0
+	github.com/gofiber/fiber/v2 v2.30.0
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
-	github.com/swaggo/swag v1.7.8
+	github.com/swaggo/swag v1.8.0
 )
