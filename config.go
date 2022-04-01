@@ -98,7 +98,7 @@ type Config struct {
 	OnComplete template.JS `json:"-"`
 
 	// An object with the activate and theme properties.
-	SyntaxHighlight SyntaxHighlightConfig `json:"syntaxHighlight,omitempty"`
+	SyntaxHighlight *SyntaxHighlightConfig `json:"syntaxHighlight,omitempty"`
 
 	// Controls whether the "Try it out" section should be enabled by default.
 	// default: false
@@ -256,7 +256,7 @@ var (
 		DefaultModelExpandDepth:  1,
 		DefaultModelRendering:    "example",
 		DocExpansion:             "list",
-		SyntaxHighlight: SyntaxHighlightConfig{
+		SyntaxHighlight: &SyntaxHighlightConfig{
 			Activate: true,
 			Theme:    "agate",
 		},
@@ -273,6 +273,34 @@ func configDefault(config ...Config) Config {
 
 	// Override default config
 	cfg := config[0]
+
+	if cfg.Title == "" {
+		cfg.Title = ConfigDefault.Title
+	}
+
+	if cfg.Layout == "" {
+		cfg.Layout = ConfigDefault.Layout
+	}
+
+	if cfg.DefaultModelRendering == "" {
+		cfg.DefaultModelRendering = ConfigDefault.DefaultModelRendering
+	}
+
+	if cfg.DocExpansion == "" {
+		cfg.DocExpansion = ConfigDefault.DocExpansion
+	}
+
+	if cfg.Plugins == nil {
+		cfg.Plugins = ConfigDefault.Plugins
+	}
+
+	if cfg.Presets == nil {
+		cfg.Presets = ConfigDefault.Presets
+	}
+
+	if cfg.SyntaxHighlight == nil {
+		cfg.SyntaxHighlight = ConfigDefault.SyntaxHighlight
+	}
 
 	return cfg
 }
