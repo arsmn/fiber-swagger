@@ -1,7 +1,7 @@
 package main
 
 import (
-	fiberSwagger "github.com/arsmn/fiber-swagger/v2"
+	swagger "github.com/arsmn/fiber-swagger/v2"
 	_ "github.com/arsmn/fiber-swagger/v2/example/docs"
 	"github.com/gofiber/fiber/v2"
 )
@@ -19,7 +19,7 @@ import (
 func main() {
 	app := fiber.New()
 
-	app.Get("/swagger/*", fiberSwagger.HandlerDefault)
+	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	app.Get("/accounts/:id", ShowAccount)
 

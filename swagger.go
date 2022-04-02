@@ -1,6 +1,7 @@
 package swagger
 
 import (
+	"fmt"
 	"html/template"
 	"path"
 	"strings"
@@ -19,7 +20,7 @@ func New(config ...Config) fiber.Handler {
 
 	index, err := template.New("swagger_index.html").Parse(indexTmpl)
 	if err != nil {
-		panic("swagger: could not parse index template")
+		panic(fmt.Errorf("Fiber: swagger middleware error -> %w", err))
 	}
 
 	var (
