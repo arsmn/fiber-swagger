@@ -1,4 +1,4 @@
-# HAS BEEN MOVED TO https://github.com/gofiber/contrib/tree/main/casbin
+# HAS BEEN MOVED TO https://github.com/gofiber/swagger
 
 # fiber-swagger
 
