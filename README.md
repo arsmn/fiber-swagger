@@ -1,3 +1,5 @@
+# HAS BEEN MOVED TO https://github.com/gofiber/contrib/tree/main/casbin
+
 # fiber-swagger
 
 fiber middleware to automatically generate RESTful API documentation with Swagger 2.0.
